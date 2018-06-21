@@ -53,6 +53,7 @@ public:
 	}
 
 
+
 private:
 	T *elements;				//存放栈中元素的栈数组
 	int top;					//栈顶指针
@@ -98,23 +99,41 @@ bool Stack<T>::pop(T& x)
 	return true;
 }
 
+//括号匹配
+void PrintMatchedPairs(char * exprssion, int size)
+{
+	if (exprssion == NULL)
+		return;
+	Stack<int> s(size);
+	int x;//pop返回的值
+	int n;//栈中元素的个数
+	for (int i = 1; i <= size; i++)
+	{
+		if (exprssion[i-1] == '(')
+			s.push(i);
+		else if (exprssion[i-1] == ')')
+		{
+			if (s.pop(x) == true)
+				cout << x << " 与 " << i << "匹配" << endl;
+			else
+				cout << "没有与第" << i << "个右括号匹配的左括号！" << endl;
+		}
+	}
+	while (s.IsEmpty() == false)
+	{
+		s.pop(x);
+		cout << "没有与第" << x << "个右括号匹配的左括号！" << endl;
+	}
+}
 
 
 int main()
 {
-	int x, y;
-	int size,top;
-	Stack<int> s;
-	s.push(3);
-	s.push(4);
-
-	size = s.getSize();
-	s.getTop(top);
-	s.pop(x);
-	s.pop(y);
-	printf("%d %d\n", top, size);
-	printf("%d %d\n", x, y);
+	char * c = "(0)ii(ooio(o)))";
+	cout << strlen(c) << endl;
+	PrintMatchedPairs(c, strlen(c));
 	return 0;
 }
+
 
 ```
