@@ -1,0 +1,198 @@
+```c++
+#include<stdio.h>
+
+#include<iostream>
+using namespace std;
+
+
+template<class T>
+struct BSTNode
+{
+	BSTNode<T> * _pLeft; // 左孩子
+	BSTNode<T> * _pRight; // 右孩子
+	T _data; // 数据域
+	// 构造函数
+	BSTNode()
+		:_pLeft(NULL)
+		, _pRight(NULL)
+	{}
+	// 构造函数
+	BSTNode(const T x)
+	{
+		_data = x;
+		_pLeft = NULL;
+		_pRight = NULL;
+	}
+
+};
+
+
+template<class T>
+class BST
+{
+public:
+	// 构造函数
+	BST()
+		:_pRoot(NULL)
+	{}
+
+	// 构造函数
+	BST(const T * arr, size_t size)
+	{
+		for (int i = 0; i < size; i++)
+			Insert(arr[i],root);
+	}
+
+	// 析构函数
+	~BST()
+	{
+		makeEmpty(_pRoot);
+	}
+
+	// 插入函数
+	bool Insert(const T n)
+	{
+		return Insert(n, _pRoot);
+	}
+
+	// 搜索函数
+	bool Search(const T n)
+	{
+		return Search(n, _pRoot);
+	}
+
+	// 删除函数
+	bool Remove(const T n)
+	{
+		return Remove(n, _pRoot);
+	}
+
+	// 显示二叉树
+	void printTree()const
+	{
+		printTree(_pRoot);
+	}
+private:
+	BSTNode<T> * _pRoot; // 二叉树根指针
+
+	// 置空函数
+	void makeEmpty(BSTNode<T> * ptr)
+	{
+		if (ptr == NULL)
+			return;
+		makeEmpty(ptr->_pLeft);
+		makeEmpty(ptr->_pRight);
+		delete ptr;
+	}
+
+	// 插入函数
+	bool Insert(const T n, BSTNode<T> *& ptr)
+	{
+		if (ptr == NULL)
+		{
+			ptr = new BSTNode<T>(n);
+			if (ptr == NULL)
+				cout << "内存分配错误！" << endl;
+			return false;
+		}
+		else if (n < ptr->_data)
+			Insert(n, ptr->_pLeft);
+		else if (n > ptr->_data)
+			Insert(n, ptr->_pRight);
+		else
+		{
+			cout << "数据已存在！" << endl;
+			return false;
+		}
+		return true;
+	}
+
+	// 搜索函数
+	bool Search(const T n, BSTNode<T> * ptr)
+	{
+		while (ptr)
+		{
+			if (ptr->_data == n)
+				return true;
+			else if (ptr->_data < n)
+				ptr = ptr->_pRight;
+			else
+				ptr = ptr->_pLeft;
+		}
+
+		cout << "内容不存在！" << endl;
+		return false;
+	}
+
+	// 删除函数
+	bool Remove(const T n, BSTNode<T> *& ptr)
+	{
+		BSTNode<T> * del; // 删除的结点
+		if (ptr == NULL)
+		{
+			cout << "数据为空！" << endl;
+			return false;
+		}
+		if (ptr->_data == n)
+		{
+			if (ptr->_pLeft != NULL && ptr->_pRight != NULL)
+			{
+				del = ptr->_pRight;
+				while (del->_pLeft != NULL)
+					del = del->_pLeft;
+				ptr->_data = del->_data;
+				Remove(del->_data, ptr->_pRight);
+			}
+			else
+			{
+
+				del = ptr;
+				/*if (ptr->_pLeft != NULL)
+					ptr = ptr->_pLeft;
+				else if (ptr->_pRight != NULL)
+					ptr = ptr->_pRight;
+				else
+					ptr = NULL;*/
+				if (ptr->_pRight != NULL)
+					ptr = ptr->_pRight;
+				else
+					ptr = ptr->_pLeft;
+
+				delete del;
+				return true;
+			}
+		}
+		else if (ptr->_data > n)
+			Remove(n, ptr->_pLeft);
+		else if (ptr->_data < n)
+			Remove(n, ptr->_pRight);
+	}
+
+	// 显示输出函数
+	bool printTree(BSTNode<T> * ptr)const
+	{
+		if (ptr == NULL)
+			return false;
+		printTree(ptr->_pLeft);
+		cout << ptr->_data << " ";
+		printTree(ptr->_pRight);
+	}
+};
+
+
+
+int main()
+{
+	BST<int> s;
+	s.Insert(5);
+	s.Insert(3);
+	s.Insert(2);
+	s.Insert(4);
+	s.Insert(8);
+	s.Insert(7);
+	s.Insert(10);
+	s.Remove(5);
+	s.printTree();
+	return 0;
+}
+```
