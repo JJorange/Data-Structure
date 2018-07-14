@@ -1,0 +1,131 @@
+```c++
+
+#include<iostream>
+using namespace std;
+
+#define M 5
+
+// 快速排序+插入排序混合排序算法
+template<class T>
+void HibridSort(T arr[], const int left, const int right)
+{
+	// 先进行快速排序，然后对基本有序列进行插入排序
+	QuickSort(arr, left, right);
+	InsertSort(arr, left, right);
+}
+
+
+// 快速排序
+template<class T>
+void QuickSort(T arr[], const int left, const int right)
+{
+	// 如果元素序列小于M时，插入排序效率更高
+	if (right - left <= M)
+		return;
+
+	// 进行排序
+	//划分
+	if (left < right){
+		int pivotpos = Partition(arr, left, right);
+		QuickSort(arr, left, pivotpos - 1);
+		QuickSort(arr, pivotpos + 1, right);
+	}
+}
+
+
+// 插入排序
+template<class T>
+void InsertSort(T * array,const int left,const int right)
+{
+	int size = right - left;
+	int end = 0;//已经排好的最后一个数
+	int temp = 0;//需要排序的数
+	for (int i = 0; i < size - 1; i++)
+	{
+		end = i;
+		temp = array[end + 1];//将要排序的数标记
+		while (end >= 0 && array[end]>temp)
+		{
+			array[end + 1] = array[end];
+			end--;
+		}
+		array[end + 1] = temp;
+	}
+}
+
+template<class T>
+T median3(T * arr, const int left, const int right)
+{
+	// 取序列的前端，尾端，中间点，最小值放在left，中值放在right
+	int mid = (left + right)/2;
+	int k = left;
+	T temp;
+	if (arr[mid] < arr[k])
+		k = mid;
+	if (arr[right] < arr[k])
+		k = right;
+	if (k != left)
+	{
+		temp = arr[k];
+		arr[k] = arr[left];
+		arr[left] = temp;
+	}
+	if (mid != right && arr[mid] < arr[right])
+	{
+		temp = arr[mid];
+		arr[mid] = arr[right];
+		arr[right] = temp;
+	}
+
+	return arr[right];
+}
+
+
+
+template<class T>
+int Partition(T arr[], const int left, const int right)
+{
+	int i = left;
+	int j = right - 1;
+	T temp;
+	if (left < right)
+	{
+		T pivot = median3(arr, left, right);
+		for (;;)
+		{
+			while (i < j && arr[i] < pivot)
+				i++;
+			while (i < j && arr[j] > pivot)
+				j--;
+			if (i < j)
+			{
+				temp = arr[i];
+				arr[i] = arr[j];
+				arr[j] = temp;
+				i++;
+				j--;
+			}
+			else
+				break;
+		}
+		if (arr[i] > pivot)
+		{
+			arr[right] = arr[i];
+			arr[i] = pivot;
+		}
+	}
+	return i;
+}
+
+
+int main()
+{
+	int arr[25] = { 5, 6, 8, 3, 4, 99, 66, 55, 43, 45, 78, 32, 56, 98, 7, 23, 67, 17, 15, 44, 98, 0, 654, 2, 5464 };
+	//int arr[6] = { 6, 9, 3, 1, 2, 7 };
+	HibridSort<int>(arr, 0, sizeof(arr) / sizeof(arr[0]) - 1);
+	for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+		cout << arr[i] << " ";
+	return 0;
+}
+
+```
