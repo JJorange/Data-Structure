@@ -1,0 +1,159 @@
+```c++
+#include<stack>
+#include<iostream>
+using namespace std;
+
+template<class K,class V>
+struct AVLNode
+{
+	AVLNode<K, V> * _pLeft;
+	AVLNode<K, V> * _pRight;
+	K key;
+	V value;
+	int bf;
+
+	AVLNode()
+		:_pLeft(NULL)
+		, _pRight(NULL)
+	{}
+
+	AVLNode(const K key, const V value)
+		:_pLeft(NULL)
+		, _pRight(NULL)
+		, key(key)
+		, value(value)
+		, bf(0)
+	{}
+
+};
+
+
+templat,,ie<class K,class V>
+class AVLTree
+{
+	//typedef AVLNode<class K, class V> Node;
+	//typedef AVLNode<class K, class V> * PNode;
+
+public:
+	// 构造函数--无参
+	AVLTree()
+		:_pRoot(NULL)
+	{}
+
+	////构造函函数--含参
+	//AVLTree(const K key, const V value)
+
+	//{}
+
+	// 插入函数
+	bool Insert(const K key, const V value)
+	{
+		_Insert(key, value, _pRoot);
+	}
+
+
+
+
+private:
+	AVLNode<K, V> * _pRoot;
+
+	// 插入函数
+	bool _Insert(const K key, const V value, AVLNode<K, V> *& ptr)
+	{
+		AVLNode<K, V> * pCur = ptr;
+		AVLNode<K, V> * pParent;
+		stack<AVLNode<K, V> *> s;
+		while (pCur != NULL)
+		{
+			if (pCur->key == key)
+				return false;
+
+			pParent = pCur;
+			s.push(pParent);
+			if (pCur->key > key)
+			{
+				pCur = pCur->_pLeft;
+			}
+			else if (p->key < key)
+			{
+				pCur = pCur->_pRight;
+			}
+		}
+		// 所插位置为NULL 新建结点
+		pCur = new AVLNode<K, V>(key, value);
+		if (pCur == NULL)
+		{
+			cerr << "存储空间不足！" << endl;
+			exit(1);
+		}
+
+		// 判断是否为空树
+		if (pParent->key < key)
+			pParent->_pRight = pCur;
+		else
+			pParent->_pLeft = pCur;
+
+		// 调整平衡
+		while (s.empty() == false)
+		{
+			pParent = s.top();
+			s.push();
+			if (p == pParent->_pLeft)
+				pParent->bf--;
+			else
+				pParent->bf++;
+
+			if (pParent->bf == 0)
+				break;
+			if (pParent->bf == 1 || pParent->bf == -1)
+				pCur = pParent;
+			if (pParent->bf == 2 || pParent->bf == -2)
+			{
+				// 进行调整
+				int d;// 调整平衡因子
+				d = (pParent->bf < 0) ? -1 : 1;
+				if (pCur->bf < 0)
+				{
+					if (d == -1)
+						RotateR(pParent); // 右单旋
+					else
+						RotateL(pParent); // 左单旋
+				}
+				else
+				{
+					if (d == -1)
+						RotateLR(pParent); // 左右双旋
+					else
+						RotateRL(pParent); // 右左双旋
+				}
+				break;
+			}
+			if (s.empty() == true)
+				pCur = pParent;
+			else
+			{
+				AVLNode<K, V> * q;
+				q = s.top();
+				if (q->key > pParent->key)
+					q->_pLeft = pParent;
+				else
+					q->_pRight = pParent;
+			}
+		}
+		return true;
+	}
+
+};
+
+
+int main()
+{
+	AVLTree<int, int> t;
+	t.Insert(1, 11);
+	t.Insert(2, 12);
+	t.Insert(3, 13);
+	t.Insert(4, 14);
+
+	return 0;
+}
+```
