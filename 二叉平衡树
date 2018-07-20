@@ -275,6 +275,7 @@ int main()
 	t.Insert(1, 11);
 	t.Insert(2, 12);
 	t.Insert(3, 13);
+	t.Insert(3, 13);
 	t.Insert(4, 14);
 	t.showTree();
 	return 0;
