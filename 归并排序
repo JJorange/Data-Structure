@@ -1,0 +1,67 @@
+```c++
+#include<iostream>
+using namespace std;
+
+// 进行归并
+void Merge(int array[], int temp[], int left, int mid, int right)
+{
+	int s1 = left;
+	int s2 = right;
+	int t = left;
+	int i = 0; // 拷贝序列时的下标
+	// left-mid
+	for (i = 0; i <= mid; i++)
+	{
+		temp[i] = array[i];
+	}
+	// mid-right 的序列进行逆向复制，这样就不用考虑多出元素的情况
+	for (i = mid + 1; i <= right; i++)  
+	{
+		temp[right + mid + 1 - i] = array[i];
+	}
+	while (t <= right)
+	{
+		// 比较后复制到原序列中
+		if (temp[s1] < temp[s2])
+			array[t++] = temp[s1++];
+		else
+			array[t++] = temp[s2--];
+	}
+
+}
+
+
+
+
+void doSort(int array[], int temp[], int left, int right)
+{
+	int mid = 0; // 对序列进行划分的中间值
+	if (left >= right)
+		return;
+	mid = left + (right - left) / 2;
+	doSort(array, temp, left, mid);
+	doSort(array, temp, mid+1, right);
+	Merge(array, temp, left, mid, right);
+}
+
+
+int main()
+{
+	int array[10] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+	int temp[10] = { 0 };
+	int i = 0;
+
+	cout << "前：";
+	for (; i < 10; i++)
+		cout << array[i] << " ";
+	cout << endl;
+	doSort(array, temp, 0, 9);
+	
+	cout << "后：";
+	for (i = 0; i < 10; i++)
+		cout << array[i] << " ";
+	cout << endl;
+	return 0;
+}
+
+```
