@@ -118,6 +118,7 @@ int Partition(T arr[], const int left, const int right)
 }
 
 
+
 int main()
 {
 	int arr[25] = { 5, 6, 8, 3, 4, 99, 66, 55, 43, 45, 78, 32, 56, 98, 7, 23, 67, 17, 15, 44, 98, 0, 654, 2, 5464 };
