@@ -23,6 +23,124 @@ struct BRTreeNode
 };
 
 
+// 红黑树迭代器
+template<class K,class V>
+class __RBTreeiterator__
+{
+	typedef BRTreeNode<K, V> Node;
+	typedef __RBTreeiterator__<K, V> Self;
+public:
+	//__RBTreeiterator__()
+	//	:_pNode(NULL)
+	//{}
+
+	__RBTreeiterator__(Node * pNode = NULL)
+		:_pNode(pNode)
+	{}
+
+	__RBTreeiterator__(const Self& s)
+		:_pNode(s._pNode)
+	{}
+
+	// *操作
+	pair<K,V>& operator*()
+	{
+		return _pNode->_value;
+	}
+
+	// ->操作
+	pair<K, V>* operator->()
+	{
+		return &(operate*())
+	}
+
+	// ++操作
+	Self& operator++()
+	{
+		BRTreeItIncrement();
+		return *this;
+	}
+
+	// --操作
+	Self operator++(int)
+	{
+		Self temp(*this);
+		BRTreeItIncrement();
+		return temp;
+	}
+
+	//  ==操作
+	bool operator==(const Self& s)
+	{
+		return _pNode == s._pNode;
+	}
+	// != 操作
+	bool operator!=(const Self& s)
+	{
+		return _pNode != s._pNode;
+	}
+private:
+	// ‘++’函数实现
+	void BRTreeItIncrement()
+	{
+		Node * pParent = NULL;
+		if (_pNode->_pRight != NULL)
+		{
+			// 右子树不为空
+			_pNode = _pNode->_pRight;
+			// 找右子树中最小的
+			while (_pNode->_pLeft != NULL)
+			{
+				_pNode = _pNode->_pLeft;
+			}
+		}
+		else
+		{
+			pParent = _pNode->_pParent;
+			// 右子树为空
+			while (pParent->_pRight == _pNode)
+			{
+				_pNode = pParent;
+				pParent = _pNode->_pParent;
+			}
+		}
+		// 如果树的根节点没有右孩子的情况且迭代器起始位置在根节点
+		if (_pNode->_pRight != pParent)
+			_pNode = pParent;
+	}
+	// ‘-- ’函数实现
+	void RBTreeItDecrement()
+	{
+		if (_pNode->_pParent->_pParent == _pNode && RED == _pNode->_color)
+		{
+			_pNode = _pNode->_pRight;
+		}
+		else if (_pNode->_pLeft)
+		{
+			// 在当前节点左子树中找最大的结点
+			_pNode = _pNode->_pLeft;
+			while (_pNode->_pRight)
+				_pNode = _pNode->_pRight;
+		}
+		else
+		{
+			PNode pParent = _pNode;
+			while (pParent->_pLeft == _pNode)
+			{
+				_pNode = pParent;
+				pParent = _pNode->_pParent;
+			}
+
+			_pNode = pParent;
+		}
+	}
+private:
+	Node * _pNode;
+};
+
+
+#if 1
+// 红黑树实现
 template<class K,class V>
 class BRTree
 {
@@ -140,6 +258,33 @@ public:
 	{
 		_show(_pRoot);
 	}
+
+	bool IsRBTree()
+	{
+		if (NULL == _pRoot)
+			return true;
+
+		if (RED == _pRoot->_color)
+		{
+			cout << "根节点为红色违反性质2" << endl;
+			return false;
+		}
+
+		// 统计单条路径中黑色结点的个数
+		size_t blackCount = 0;
+		Node* pCur = _pRoot;
+		while (pCur)
+		{
+			if (BLACK == pCur->_color)
+				++blackCount;
+
+			pCur = pCur->_pLeft;
+		}
+
+		size_t pathCount = 0;
+		return _IsRBTree(_pRoot, pathCount, blackCount);
+	}
+
 private:
 	Node * _pRoot;
 
@@ -206,19 +351,296 @@ private:
 		}
 	}
 
-};
+	bool _IsRBTree(Node* pRoot, size_t n, size_t blackCount)
+	{
+		if (NULL == pRoot)
+			return true;
 
+		if (BLACK == pRoot->_color)
+			++n;
+
+		Node* pParent = pRoot->_pParent;
+		if (pParent && RED == pRoot->_color && RED == pParent->_color)
+		{
+			cout << "有连在一起的红色结点违反性质3" << endl;
+			return false;
+		}
+
+		if (NULL == pRoot->_pLeft && NULL == pRoot->_pRight)
+		{
+			if (n != blackCount)
+			{
+				cout << "路径中黑色结点个数不同违反性质4" << endl;
+				return false;
+			}
+		}
+
+		return _IsRBTree(pRoot->_pLeft, n, blackCount) && _IsRBTree(pRoot->_pRight, n, blackCount);
+	}
+
+};
+#else
+// 带迭代器的红黑树实现
+template<class K, class V>
+class BRTree
+{
+	typedef BRTreeNode<K, V> Node;
+
+public:
+	typedef __RBTreeiterator__<K, V> Iterator;
+public:
+	BRTree()
+		:_pHead(new Node)
+	{}
+
+	// 起始位置
+	Iterator Begin()
+	{
+		return Iterator(_pHead->_pLeft);
+	}
+
+	// enf位置
+	Iterator End()
+	{
+		return _pHead;
+	}
+
+	// 得到_pRoot结点
+	Node*& GetRoot()
+	{
+		return _pHead->_pParent;
+	}
+
+	bool InsertUnique(const pair<K, V>& value)
+	{
+		Node *& _pRoot = GetRoot();
+		if (_pRoot == NULL)
+		{
+			_pRoot = new Node(value.first, value.second, BLACK);
+			_pRoot->_pParent = _pHead;
+		}
+		else
+		{
+
+			// 找到当前插入结点
+			Node * pCur = GetRoot();
+			Node * pParent = NULL;
+			while (pCur)
+			{
+				pParent = pCur;
+				if (pCur->_value.first > value.first)
+					pCur = pCur->_pLeft;
+				else if (pCur->_value.first < value.first)
+					pCur = pCur->_pRight;
+				else
+				{
+					cout << "该值已存在！！！" << endl;
+					return false;
+				}
+			}
+
+			// 插入新结点
+			pCur = new BRTreeNode<K, V>(value.first, value.second);
+			if (pCur->_value.first < pParent->_value.first)
+				pParent->_pLeft = pCur;
+			else
+				pParent->_pRight = pCur;
+
+			pCur->_pParent = pParent;
+
+			// 更新结点颜色
+			while (pCur != GetRoot() && pParent->_color == RED)
+			{
+				Node * grandParent = pParent->_pParent;
+				// 父亲结点为祖父结点的左孩子的情况
+				if (pParent == grandParent->_pLeft)
+				{
+					Node * uncle = grandParent->_pRight;
+					// 情况三：cur pParent uncle为红色结点
+					// 将pParent 和 uncle 结点置为黑色，grandParent置为红色
+					// 然后向上修改
+					if (uncle && uncle->_color == RED)
+					{
+						Node * uncle = grandParent->_pRight;
+						pParent->_color = BLACK;
+						uncle->_color = BLACK;
+						grandParent->_color = RED;
+						// Cur指向grandParent方便向上修改
+						pCur = grandParent;
+						pParent = pCur->_pParent;
+					}
+					else
+					{
+						// 情况五：左单旋转化成情况四
+						if (pCur == pParent->_pRight)
+						{
+							_RotateL(pParent);
+							swap(pParent, pCur);
+						}
+						grandParent->_color = RED;
+						pParent->_color = BLACK;
+						// 情况四
+						_RotateR(grandParent);
+						swap(grandParent, pParent);
+					}
+				}
+				else
+				{
+					Node * uncle = grandParent->_pLeft;
+					// 情况三
+					if (uncle && uncle->_color == RED)
+					{
+						pParent->_color = BLACK;
+						uncle->_color = BLACK;
+						grandParent->_color = RED;
+						pCur = grandParent;
+						pParent = pCur->_pParent;
+					}
+					else
+					{
+						// 情况五
+						if (pCur == pParent->_pLeft)
+						{
+							_RotateR(pParent);
+							swap(pCur, pParent);
+						}
+						// 情况四
+						grandParent->_color = RED;
+						pParent->_color = BLACK;
+
+						_RotateL(grandParent);
+					}
+				}
+			}
+		}
+			_pRoot->_color = BLACK;
+			_pHead->_pLeft = MostLeft();
+			_pHead->_pRight = MostRight();
+			return true;
+		
+	}
+
+	// 前序遍历红黑树
+	void show()
+	{
+		_show(GetRoot());
+	}
+private:
+	Node * _pHead;
+
+	// 左单旋
+	void _RotateL(Node * pParent)
+	{
+		Node * pSubR = pParent->_pRight;
+		Node * pSubRL = pSubR->_pLeft;
+
+		pParent->_pRight = pSubRL;
+		if (pSubRL)
+			pSubRL->_pParent = pParent;
+
+		pSubR->_pLeft = pParent;
+		Node * pPParent = pParent->_pParent;
+		pParent->_pParent = pSubR;
+		pSubR->_pParent = pPParent;
+
+		if (NULL == pPParent)
+			GetRoot() = pSubR;
+		else
+		{
+			if (pParent == pPParent->_pLeft)
+				pPParent->_pLeft = pSubR;
+			else
+				pPParent->_pRight = pSubR;
+		}
+	}
+
+	// 右单旋
+	void _RotateR(Node * pParent)
+	{
+		Node * pSubL = pParent->_pLeft;
+		Node * pSubLR = pSubL->_pRight;
+
+		pParent->_pLeft = pSubLR;
+		if (pSubLR)
+			pSubLR->_pParent = pParent;
+
+		pSubL->_pRight = pParent;
+		Node * pPParent = pParent->_pParent;
+		pParent->_pParent = pSubL;
+		pSubL->_pParent = pPParent;
+
+		if (NULL == pPParent)
+			GetRoot() = pSubL;
+		else
+		{
+			if (pParent == pPParent->_pLeft)
+				pPParent->_pLeft = pSubL;
+			else
+				pPParent->_pRight = pSubL;
+		}
+	}
+
+	// 前序遍历红黑树
+	void _show(Node * ptr)
+	{
+		if (ptr)
+		{
+			_show(ptr->_pLeft);
+			cout << ptr->_value.first << "," << ptr->_value.second << endl;
+			_show(ptr->_pRight);
+		}
+	}
+
+	// 最左边的结点
+	Node * MostLeft()
+	{
+		Node* pCur = GetRoot();
+		if (pCur == NULL)
+			return NULL;
+		while (pCur->_pLeft)
+			pCur = pCur->_pLeft;
+		
+		return pCur;
+	}
+	// 最右边的结点
+	Node * MostRight()
+	{
+		Node * pCur = GetRoot();
+		if (pCur == NULL)
+			return NULL;
+		while (pCur->_pRight)
+			pCur = pCur->_pRight;
+
+		return pCur;
+	}
+};
+#endif
 
 
 int main()
 {
 	int arr[] = { 10, 7, 8, 15, 5, 6, 11, 13, 12 };
 	BRTree<int, int> rbt;
+
 	for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
 	{
 		rbt.InsertUnique(pair<int, int>(arr[i], i));
 	}
 	rbt.show();
+	if (rbt.IsRBTree() == true)
+		cout << "是红黑树" << endl;
+	//cout << "***" << endl;
+
+	//BRTree<int, int>::Iterator it = rbt.Begin();
+	//while (it != rbt.End())
+	//{
+	//	cout << (*it).first << "," << (*it).second << endl;
+	//	++it; 
+	//}
 	return 0;
 }
+
+
+
+
 ```
