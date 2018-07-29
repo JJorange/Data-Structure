@@ -1,0 +1,524 @@
+```c++
+#pragma once
+#include "Common.h"
+#include <iostream>
+using namespace  std;
+#include <string>
+
+enum State{EXIST, EMPTY, DELETE};
+
+template<class K, class V>
+struct HashTableE
+{
+	HashTableE()
+		: _state(EMPTY)
+	{}
+
+	K _key;
+	V _value;
+	State _state;
+};
+
+// 静态
+const int Cacpaity = 10;
+#if 0
+template<class K, class V>
+class HashTable
+{
+	typedef HashTableE<K, V> Elem;
+
+public:
+	HashTable()
+		: _size(0)
+		, _totalElem(0)
+	{
+         for(size_t i = 0; i < Cacpaity; ++i)
+			 _table[i]._state = EMPTY;
+	}
+
+	void Insert(const K& key, const V& value)
+	{
+		// 哈希表格已满
+		if(_totalElem == Cacpaity)
+			return;
+
+		// 1. 找元素的存储位置
+		size_t hashAddr = HashFunc(key);
+
+		// EXIST
+		// DELETE
+		while(EMPTY != _table[hashAddr]._state)
+		{
+			if(EXIST == _table[hashAddr]._state)
+			{
+				if(key == _table[hashAddr]._key)
+					return;
+			}
+
+			// 线性探测
+			hashAddr++;
+
+			if(Cacpaity == hashAddr)
+				hashAddr = 0;
+		}
+
+		// 存储元素
+		_table[hashAddr]._key = key;
+		_table[hashAddr]._value = value;
+		_table[hashAddr]._state = EXIST;
+		++_size;
+		++_totalElem;
+	}
+
+	int Find(const K& key)
+	{
+		// 1. 找元素的存储位置
+		size_t hashAddr = HashFunc(key);
+		size_t startAddr = hashAddr; 
+		// EXIST
+		// DELETE
+		while(EMPTY != _table[hashAddr]._state)
+		{
+			if(EXIST == _table[hashAddr]._state)
+			{
+				if(key == _table[hashAddr]._key)
+					return hashAddr;
+			}
+
+			// 线性探测
+			hashAddr++;
+
+			// 地址越界
+			if(Cacpaity == hashAddr)
+				hashAddr = 0;
+
+			// 找了一圈， 都没有找到
+			if(hashAddr == startAddr)
+				return -1;
+		}
+
+		return -1;
+	}
+
+	void Delete(const K& key)
+	{
+		int addr = Find(key);
+		if(-1 != addr)
+		{
+			_table[addr]._state = DELETE;
+			--_size;
+		}
+	}
+
+	int Size()const
+	{
+		return _size;
+	}
+
+	bool Empty()const
+	{
+		return 0 == _size;
+	}
+
+private:
+	size_t HashFunc(const K& key)
+	{
+		return key % Cacpaity;
+	}
+
+private:
+	Elem _table[Cacpaity];
+	int _size;  // 有效元素的个数
+	int _totalElem;
+};
+#endif
+
+#if 0
+template<class K, class V>
+class HashTable
+{
+	typedef HashTableE<K, V> Elem;
+
+public:
+	HashTable(bool IsLine = true)
+		: _size(0)
+		, _totalElem(0)
+		, _IsLine(IsLine)
+	{
+		for(size_t i = 0; i < Cacpaity; ++i)
+			_table[i]._state = EMPTY;
+	}
+
+	void Insert(const K& key, const V& value)
+	{
+		// 哈希表格已满
+		if(_totalElem == Cacpaity)
+			return;
+
+		// 1. 找元素的存储位置
+		size_t hashAddr = HashFunc(key);
+		int i = 0;
+
+		// EXIST
+		// DELETE
+		while(EMPTY != _table[hashAddr]._state)
+		{
+			if(EXIST == _table[hashAddr]._state)
+			{
+				if(key == _table[hashAddr]._key)
+					return;
+			}
+
+			if(_IsLine)
+				DetectiveLine(hashAddr);
+			else
+				Detective2(hashAddr, ++i);
+			// 二次探测
+		}
+
+		// 存储元素
+		_table[hashAddr]._key = key;
+		_table[hashAddr]._value = value;
+		_table[hashAddr]._state = EXIST;
+		++_size;
+		++_totalElem;
+	}
+
+	int Find(const K& key)
+	{
+		// 1. 找元素的存储位置
+		size_t hashAddr = HashFunc(key);
+		size_t startAddr = hashAddr; 
+		// EXIST
+		// DELETE
+		while(EMPTY != _table[hashAddr]._state)
+		{
+			if(EXIST == _table[hashAddr]._state)
+			{
+				if(key == _table[hashAddr]._key)
+					return hashAddr;
+			}
+
+			if(_IsLine)
+			{
+				DetectiveLine(hashAddr);
+			}
+			else
+			{
+				Detective2(hashAddr, ++i);
+			}
+		}
+
+		return -1;
+	}
+
+	void Delete(const K& key)
+	{
+		int addr = Find(key);
+		if(-1 != addr)
+		{
+			_table[addr]._state = DELETE;
+			--_size;
+		}
+	}
+
+	int Size()const
+	{
+		return _size;
+	}
+
+	bool Empty()const
+	{
+		return 0 == _size;
+	}
+
+private:
+	size_t HashFunc(const K& key)
+	{
+		return key % Cacpaity;
+	}
+
+	void DetectiveLine(size_t& hashAddr)
+	{
+		hashAddr++;
+
+		if(hashAddr >= Cacpaity)
+			hashAddr = 0;
+	}
+
+	void Detective2(size_t& hashAddr, size_t i)
+	{
+		hashAddr = hashAddr + 2*i + 1;
+
+		if(hashAddr >= Cacpaity)
+			hashAddr %= Cacpaity;
+	}
+
+private:
+	Elem _table[Cacpaity];
+	int _size;  // 有效元素的个数
+	int _totalElem;
+	bool _IsLine;   // 标记是否为线性探测
+};
+#endif
+
+class KeyToIntDef
+{
+public:
+	size_t operator()(int key)
+	{
+		return key;
+	}
+};
+
+class KeyToIntStr
+{
+public:
+	size_t operator()(const string& str)
+	{
+
+		return StrToInt(str.c_str());
+	}
+};
+
+
+
+template<class K, class V, class _HashFunc_ = KeyToIntDef>
+class HashTable
+{
+	typedef HashTableE<K, V> HTE;
+
+public:
+	HashTable(size_t capacity = 10, bool IsLine = true)
+		: _size(0) 
+		, _IsLine(IsLine)
+	{
+		_capacity = GetNextPrime(capacity);
+		_table = new HTE[_capacity];
+	}
+	
+	~HashTable()
+	{
+		if(_table)
+		{
+			delete[] _table;
+			_capacity = 0;
+			_size = 0;
+		}
+	}
+
+	void Insert(const K& key, const V& value)
+	{
+		_CheckCapacity();
+
+		// 1. 找元素的存储位置
+		size_t hashAddr = HashFunc(key);
+		int i = 0;
+
+		// EXIST
+		// DELETE
+		while(EMPTY != _table[hashAddr]._state)
+		{
+			if(EXIST == _table[hashAddr]._state)
+			{
+				if(key == _table[hashAddr]._key)
+					return;
+			}
+
+			if(_IsLine)
+				DetectiveLine(hashAddr);
+			else
+				Detective2(hashAddr, ++i);
+			// 二次探测
+		}
+
+		// 存储元素
+		_table[hashAddr]._key = key;
+		_table[hashAddr]._value = value;
+		_table[hashAddr]._state = EXIST;
+		++_size;
+	}
+
+	int Find(const K& key)
+	{
+		// 1. 找元素的存储位置
+		size_t hashAddr = HashFunc(key);
+		size_t startAddr = hashAddr; 
+		size_t i= 0;
+		// EXIST
+		// DELETE
+		while(EMPTY != _table[hashAddr]._state)
+		{
+			if(EXIST == _table[hashAddr]._state)
+			{
+				if(key == _table[hashAddr]._key)
+					return hashAddr;
+			}
+
+			if(_IsLine)
+			{
+				DetectiveLine(hashAddr);
+			}
+			else
+			{
+				Detective2(hashAddr, ++i);
+			}
+		}
+
+		return -1;
+	}
+
+	void Delete(const K& key)
+	{
+		int addr = Find(key);
+		if(-1 != addr)
+		{
+			_table[addr]._state = DELETE;
+			--_size;
+		}
+	}
+
+	int Size()const
+	{
+		return _size;
+	}
+
+	bool Empty()const
+	{
+		return 0 == _size;
+	}
+
+	void Swap(HashTable& ht)
+	{
+		swap(_table, ht._table);
+		swap(_size, ht._size);
+		swap(_capacity, ht._capacity);
+		swap(_IsLine, ht._IsLine);
+	}
+
+private:
+	size_t HashFunc(const K& key)
+	{
+		return _HashFunc_()(key) % _capacity;
+	}
+
+#if 0
+	void _CheckCapacity()
+	{
+		if(_size*10 / _capacity >= 7)
+		{
+			// 开辟新空间
+			size_t newCapacity = _capacity*2;
+			HTE* pTemp = new HTE[newCapacity];
+
+			// 拷贝元素
+			for(size_t i = 0; i < _capacity; ++i)
+			{
+				if(EXIST == _table[i]._state)
+				{
+					size_t hashAddr = _table[i]._key % newCapacity;
+
+					while(EMPTY != pTemp[hashAddr]._state)
+					{
+						if(_IsLine)
+							DetectiveLine(hashAddr);
+						else
+							Detective2(hashAddr, ++i);
+						// 二次探测
+					}
+
+					// 存储元素
+					pTemp[hashAddr] = _table[i];
+					pTemp[hashAddr]._state = EXIST;
+				}
+			}
+
+			// 释放旧空间
+			delete[] _table;
+			_table = pTemp;
+			_size = newSize;
+			_capacity = newCapacity;
+		}
+	}
+#endif
+
+	void _CheckCapacity()
+	{
+		if(_size*10 / _capacity >= 7)
+		{
+			HashTable<K, V, _HashFunc_> ht(_capacity, _IsLine);
+
+			for(size_t i = 0; i < _capacity; ++i)
+			{
+				if(EXIST == _table[i]._state)
+					ht.Insert(_table[i]._key, _table[i]._value);
+			}
+
+			Swap(ht);
+		}
+	}
+
+	void DetectiveLine(size_t& hashAddr)
+	{
+		hashAddr++;
+
+		if(hashAddr >= Cacpaity)
+			hashAddr = 0;
+	}
+
+	void Detective2(size_t& hashAddr, size_t i)
+	{
+		hashAddr = hashAddr + 2*i + 1;
+
+		if(hashAddr >= Cacpaity)
+			hashAddr %= Cacpaity;
+	}
+
+private:
+	HTE* _table;
+	size_t _capacity;
+	size_t _size;  // 有效元素的个数
+	bool _IsLine;   // 标记是否为线性探测
+};
+
+void TestHashTable()
+{
+	HashTable<int, int> ht(4);
+	ht.Insert(1, 1);
+	ht.Insert(3, 3);
+	ht.Insert(4, 4);
+	ht.Insert(8, 8);
+	ht.Insert(9, 9);
+	ht.Insert(7, 7);
+	ht.Insert(17, 17);
+	cout<<ht.Size()<<endl;
+
+	if(-1 != ht.Find(17))
+		cout<<"该元素在哈希表中"<<endl;
+	else
+		cout<<"该元素不在哈希表中"<<endl;
+
+	if(-1 != ht.Find(27))
+		cout<<"该元素在哈希表中"<<endl;
+	else
+		cout<<"该元素不在哈希表中"<<endl;
+
+	ht.Delete(17);
+	cout<<ht.Size()<<endl;
+	if(-1 != ht.Find(17))
+		cout<<"该元素在哈希表中"<<endl;
+	else
+		cout<<"该元素不在哈希表中"<<endl;
+}
+
+
+void TestHashTableString()
+{
+	HashTable<string, string, KeyToIntStr> ht;
+	ht.Insert("apple", "苹果");
+	ht.Insert("orange", "橘子");
+	ht.Insert("peach", "桃子");
+	ht.Insert("banana", "香蕉");
+	ht.Insert("watermelon", "西瓜");
+}
+```
