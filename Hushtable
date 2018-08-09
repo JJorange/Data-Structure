@@ -521,4 +521,112 @@ void TestHashTableString()
 	ht.Insert("banana", "香蕉");
 	ht.Insert("watermelon", "西瓜");
 }
+
+/////////////////////////////////////////////////
+#pragma once
+#include<iostream>
+using namespace std;
+
+#include<vector>
+
+
+template<size_t N>
+class BitMap
+{
+public:
+	BitMap()
+		:_bit((N >> 5) + 1)
+	{}
+
+	// 置一
+	void Set(size_t which)
+	{
+		if (which > N)
+			return;
+
+		size_t index = (which >> 5);
+		size_t pos = which % 32;
+
+		_bit[index] |= (1 << pos);
+	}
+
+	// 置零
+	void ReSet(size_t which)
+	{
+		if (which > N)
+			return;
+
+		size_t index = (which >> 5);
+		size_t pos = which % 32;
+		
+		_bit[index] &= ~(1 << pos);
+
+	}
+
+	// 检测位图中which是否为1
+	bool Test(size_t which)
+	{
+		if (which > N)
+			return false;
+
+		size_t index = (which >> 5);
+		size_t pos = which % 32;
+		return _bit[index] & (1 << pos);
+	}
+
+	// 获取位图中比特位的总个数
+	size_t Size()const
+	{
+		return N;
+	}
+
+	// 位图中比特为1的个数
+	size_t Count()const
+	{
+		const char* pCount = "\0\1\1\2\1\2\2\3\1\2\2\3\2\3\3\4";
+		size_t size = _bit.size();
+		size_t count = 0;
+		for (size_t i = 0; i < size; ++i)
+		{
+			int value = _bit[i];
+			int j = 0;
+			while (j < sizeof(_bit[0]))
+			{
+				char c = value;
+				count += pCount[c & 0x0f];
+
+				c >>= 4;
+				count += pCount[c & 0x0f];
+				++j;
+
+				value >>= 8;
+			}
+		}
+		return count;
+	}
+	
+private:
+	vector<int> _bit;
+};
+
+
+void TestBitMap()
+{
+	int array[] = { 1, 3, 7, 4, 12, 16, 19, 13, 22, 18 };
+	BitMap<32> bit;
+
+	for (size_t i = 0; i < sizeof(array) / sizeof(array[0]); ++i)
+		bit.Set(array[i]);
+
+	
+	cout << "位图中比特位的总个数：" << bit.Size() << endl;
+	cout << "位图中比特位为1的个数：" << bit.Count() << endl;
+	
+	if (bit.Test(12))
+		cout << "12 in array" << endl;
+	else
+		cout << "12 is not in array" << endl;
+
+
+}
 ```
