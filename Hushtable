@@ -21,7 +21,7 @@ struct HashTableE
 
 // 静态
 const int Cacpaity = 10;
-#if 0
+#if 0  
 template<class K, class V>
 class HashTable
 {
